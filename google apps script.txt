@@ -1,0 +1,40 @@
+function reporttest() {
+  var profileId = 61755815;//viewID
+  var tableId = 'ga:' + profileId;
+  var startDate = getLastNdays(31);//3 month ago
+  var endDate = getLastNdays(0);// today
+  var optArgs = {
+    'dimensions':'ga:browser' 
+  };
+  var results = Analytics.Data.Ga.get(
+    tableId,
+    startDate,
+    endDate,
+    'ga:visitBounceRate, ga:visits, ga:pageviews,ga:visitors,ga:transactions',
+    optArgs);
+  outputToSpreadsheet(results);
+}
+ 
+//
+function getLastNdays(nDaysAgo) {
+  var today = new Date();
+  var before = new Date();
+  before.setDate(today.getDate() - nDaysAgo);
+  return Utilities.formatDate(before, 'GMT', 'yyyy-MM-dd');
+}
+ 
+function outputToSpreadsheet(results) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet();
+  
+  // Print the headers.
+  var headerNames = [];
+  for (var i = 0, header; header = results.getColumnHeaders()[i]; ++i) {
+    headerNames.push(header.getName());
+  }
+  sheet.getRange(1, 1, 1, headerNames.length)
+      .setValues([headerNames]);
+  
+  // Print the rows of data.
+  sheet.getRange(2, 1, results.getRows().length, headerNames.length)
+      .setValues(results.getRows());
+}
